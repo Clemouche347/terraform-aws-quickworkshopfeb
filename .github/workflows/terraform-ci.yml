@@ -1,0 +1,42 @@
+name: Terraform CI
+
+on: [push]
+
+env:
+  TF_VERSION: "1.10.0"
+  AWS_REGION: "eu-west-3"
+
+jobs:
+  terraform:
+    name: Validate & Plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # needed for OIDC auth
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4 
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -no-color
