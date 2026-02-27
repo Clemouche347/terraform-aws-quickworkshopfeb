@@ -1,6 +1,6 @@
 name: Terraform CI
 
-on: [push]
+on: [push, pull_request]
 
 env:
   TF_VERSION: "1.10.0"
